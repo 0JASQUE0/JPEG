@@ -111,8 +111,6 @@ namespace JPEG
                 }
             }
 
-            //label1.Text = (image.Height * image.Width * 24).ToString();
-
             for (int ii = 0; ii < 32; ++ii)
             {
                 for (int jj = 0; jj < 32; ++jj)
@@ -252,18 +250,6 @@ namespace JPEG
 
                 }
             }
-
-            /*Bitmap result = new Bitmap(image.Width, image.Height);
-            for (int i = 0; i < image.Height; i++)
-            {
-                for (int j = 0; j < image.Width; j++)
-                {
-                    color = image.GetPixel(i, j);
-                    conv = conv.FromRgbColor(color);
-                    result.SetPixel(i, j, conv.ToRgbColor());
-                }
-                pictureBox2.Image = result;
-            }*/
 
             Bitmap result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
