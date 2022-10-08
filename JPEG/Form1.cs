@@ -14,9 +14,9 @@ namespace JPEG
     {
         private Bitmap image;
 
-        float[,] Y;
+        /*float[,] Y;
         float[,] Cb;
-        float[,] Cr;
+        float[,] Cr;*/
         // Коэффициент сжатия CbCr
         int n;
         // Размер ДКП
@@ -76,6 +76,11 @@ namespace JPEG
             return det;
         }
 
+        float convert(float value, float From1, float From2, float To1, float To2)
+        {
+            return (value - From1) / (From2 - From1) * (To2 - To1) + To1;
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             OpenFileDialog open_dialog = new OpenFileDialog(); //создание диалогового окна для выбора файла
@@ -99,12 +104,17 @@ namespace JPEG
         {
             
 
-            Y = new float[pictureBox1.Width, pictureBox1.Height];
-            Cb = new float[pictureBox1.Width, pictureBox1.Height];
-            Cr = new float[pictureBox1.Width, pictureBox1.Height];
+            float[,] Y = new float[pictureBox1.Width, pictureBox1.Height];
+            float[,] Cb = new float[pictureBox1.Width, pictureBox1.Height];
+            float[,] Cr = new float[pictureBox1.Width, pictureBox1.Height];
 
             YCbCrColor conv = new YCbCrColor();
             Color color;
+
+            int[] gistR = new int[256];
+            int[] gistG = new int[256];
+            int[] gistB = new int[256];
+            int[] gistY = new int[256];            
 
             //image = new Bitmap(pictureBox1.Image);
 
@@ -122,7 +132,7 @@ namespace JPEG
             }
 
             // Прореживание
-            n = 32;
+            n = 2;
             float[,] newCb = new float[pictureBox1.Width / n, pictureBox1.Height / n];
             float[,] newCr = new float[pictureBox1.Width / n, pictureBox1.Height / n];
 
@@ -248,8 +258,8 @@ namespace JPEG
                         }
                     }
 
-                    // Обратное квантование
 
+                    // Обратное квантование
                     for (int i = 0; i < N; ++i)
                     {
                         for (int j = 0; j < N; ++j)
@@ -284,6 +294,21 @@ namespace JPEG
                 }
             }
 
+            // Получение данных для гистограммы яркости
+            for (int i = 0; i < pictureBox1.Height; ++i)
+            {
+                for (int j = 0; j < pictureBox1.Width; ++j)
+                {
+                    if ((int)Y[i, j] > 255)
+                        gistY[255]++;
+                    else if ((int)Y[i, j] < 0)
+                        gistY[0]++;
+                    else
+                        gistY[(int)Y[i, j]]++;
+                }
+            }
+
+            // Вывод изображения
             Bitmap result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
             for (int i = 0; i < pictureBox2.Height; i++)
@@ -298,7 +323,37 @@ namespace JPEG
                 pictureBox2.Image = result;
             }
 
-            result.Save("D:\\4 курс\\Программирование на кристалле\\pctr.png");
+            // Получение данных для гистограммы RGB
+            for (int i = 0; i < pictureBox1.Height; ++i)
+            {
+                for (int j = 0; j < pictureBox1.Width; ++j)
+                {
+                    color = result.GetPixel(i, j);
+                    gistR[color.R]++;
+                    gistG[color.G]++;
+                    gistB[color.B]++;
+                }
+            }
+
+            // Рисование гистограмм
+            Graphics gY = pictureBox3.CreateGraphics();
+            Graphics gR = pictureBox4.CreateGraphics();
+            Graphics gG = pictureBox5.CreateGraphics();
+            Graphics gB = pictureBox6.CreateGraphics();
+            Pen pen = new Pen(Color.Black, 3);
+            gY.Clear(BackColor);
+            gR.Clear(BackColor);
+            gG.Clear(BackColor);
+            gB.Clear(BackColor);
+            for (int i = 0; i < 256; ++i)
+            {
+                gY.DrawLine(pen, i, 256, i, pictureBox3.Height - convert(gistY[i], 0, gistY.Max(), 0, 64));
+                gR.DrawLine(pen, i, 256, i, pictureBox4.Height - convert(gistR[i], 0, gistR.Max(), 0, 64));
+                gG.DrawLine(pen, i, 256, i, pictureBox5.Height - convert(gistG[i], 0, gistG.Max(), 0, 64));
+                gB.DrawLine(pen, i, 256, i, pictureBox6.Height - convert(gistB[i], 0, gistB.Max(), 0, 64));
+            }
+
+            //result.Save("D:\\4 курс\\Программирование на кристалле\\pctr.png");
         }
 
         private void button3_Click(object sender, EventArgs e)
