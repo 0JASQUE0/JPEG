@@ -41,6 +41,41 @@ namespace JPEG
             return result;
         }
 
+        public float[,] GetMinor(float[,] matrix, int row, int column)
+        {
+            if (matrix.GetLength(0) != matrix.GetLength(1)) throw new Exception(" Число строк в матрице не совпадает с числом столбцов");
+            float[,] buf = new float[matrix.GetLength(0) - 1, matrix.GetLength(0) - 1];
+            for (int i = 0; i < matrix.GetLength(0); i++)
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    if ((i != row) || (j != column))
+                    {
+                        if (i > row && j < column) buf[i - 1, j] = matrix[i, j];
+                        if (i < row && j > column) buf[i, j - 1] = matrix[i, j];
+                        if (i > row && j > column) buf[i - 1, j - 1] = matrix[i, j];
+                        if (i < row && j < column) buf[i, j] = matrix[i, j];
+                    }
+                }
+            return buf;
+        }
+
+        public float Determ(float[,] matrix)
+        {
+            if (matrix.GetLength(0) != matrix.GetLength(1)) throw new Exception(" Число строк в матрице не совпадает с числом столбцов");
+            float det = 0;
+            int Rank = matrix.GetLength(0);
+            if (Rank == 1) det = matrix[0, 0];
+            if (Rank == 2) det = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0];
+            if (Rank > 2)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    det += (float)(Math.Pow(-1,0+j)*matrix[0, j] * Determ(GetMinor(matrix, 0, j)));
+                }
+            }
+            return det;
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             OpenFileDialog open_dialog = new OpenFileDialog(); //создание диалогового окна для выбора файла
@@ -62,7 +97,7 @@ namespace JPEG
 
         private void button2_Click(object sender, EventArgs e)
         {
-            n = 2;
+            
 
             Y = new float[pictureBox1.Width, pictureBox1.Height];
             Cb = new float[pictureBox1.Width, pictureBox1.Height];
@@ -87,6 +122,7 @@ namespace JPEG
             }
 
             // Прореживание
+            n = 32;
             float[,] newCb = new float[pictureBox1.Width / n, pictureBox1.Height / n];
             float[,] newCr = new float[pictureBox1.Width / n, pictureBox1.Height / n];
 
@@ -108,6 +144,17 @@ namespace JPEG
                 {
                     if (i == 0) dct[i, j] = (float)(1 / Math.Sqrt(N));
                     else dct[i, j] = (float)(Math.Sqrt(2.0 / N) * Math.Cos(((2 * j + 1) * i * Math.PI) / (2 * N)));
+                }
+            }
+
+            // Обратная матрица ДКП
+            float[,] idct = new float[N, N];
+            float det = Determ(dct);
+            for (int i = 0; i < N; ++i)
+            {
+                for (int j = 0; j < N; ++j)
+                {
+                    idct[i, j] = (float)((1.0 / det) * dct[j, i]);
                 }
             }
 
@@ -160,7 +207,7 @@ namespace JPEG
                         }
                     }
 
-                    /*// Прохождение зигзагом
+                    // Прохождение зигзагом
                     int[] t = new int[64];
 
                     int I = 0;
@@ -197,12 +244,9 @@ namespace JPEG
                         }
                         else if (J + 1 <= N - 1)
                         {
-                            t[++m] = test[I,++J];
+                            t[++m] = test[I, ++J];
                         }
-                    }*/
-
-
-
+                    }
 
                     // Обратное квантование
 
@@ -214,18 +258,7 @@ namespace JPEG
                         }
                     }
 
-                    // Обратная матрица ДКП
-                    float[,] idct = new float[8, 8]
-                    {
-                        { 0.3539f, 0.4905f, 0.4616f, 0.4155f, 0.3539f, 0.2782f, 0.1912f, 0.0971f },
-                        { 0.3539f, 0.4158f, 0.1910f, -0.0977f, -0.3533f, -0.4901f, -0.4621f, -0.2782f },
-                        { 0.3538f, 0.2779f, -0.1916f, 0.4906f, -0.3534f, 0.0977f, 0.4619f, 0.4155f },
-                        { 0.3537f, 0.0975f, -0.4621f, -0.2779f, 0.3537f, 0.4158f, -0.1914f, -0.4905f },
-                        { 0.3535f, -0.0975f, -0.4619f, 0.2779f, 0.3535f, -0.4158f, -0.1913f, 0.4905f },
-                        { 0.3534f, -0.2779f, -0.1911f, 0.4906f, -0.3538f, -0.0977f, 0.4621f, -0.4155f },
-                        { 0.3533f, -0.4158f, 0.1917f, 0.0977f, -0.3539f, 0.4901f, -0.4619f, 0.2782f },
-                        { 0.3533f, -0.4905f, 0.4624f, -0.4155f, 0.3533f, -0.2782f, 0.1915f, -0.0971f }
-                    };
+
 
                     // Умножение на обратную матрицу ДКП
                     test = MatrixMultiplication(test, idct);
@@ -274,3 +307,22 @@ namespace JPEG
         }
     }
 }
+
+
+
+
+
+
+
+
+
+/*            {
+                        { 0.3539f, 0.4905f, 0.4616f, 0.4155f, 0.3539f, 0.2782f, 0.1912f, 0.0971f },
+                        { 0.3539f, 0.4158f, 0.1910f, -0.0977f, -0.3533f, -0.4901f, -0.4621f, -0.2782f },
+                        { 0.3538f, 0.2779f, -0.1916f, 0.4906f, -0.3534f, 0.0977f, 0.4619f, 0.4155f },
+                        { 0.3537f, 0.0975f, -0.4621f, -0.2779f, 0.3537f, 0.4158f, -0.1914f, -0.4905f },
+                        { 0.3535f, -0.0975f, -0.4619f, 0.2779f, 0.3535f, -0.4158f, -0.1913f, 0.4905f },
+                        { 0.3534f, -0.2779f, -0.1911f, 0.4906f, -0.3538f, -0.0977f, 0.4621f, -0.4155f },
+                        { 0.3533f, -0.4158f, 0.1917f, 0.0977f, -0.3539f, 0.4901f, -0.4619f, 0.2782f },
+                        { 0.3533f, -0.4905f, 0.4624f, -0.4155f, 0.3533f, -0.2782f, 0.1915f, -0.0971f }
+            };*/
