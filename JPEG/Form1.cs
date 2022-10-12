@@ -370,7 +370,6 @@ namespace JPEG
 
             // Подсчет СКО
             double MSE = 0;
-
             for (int i = 0; i < pictureBox1.Height; ++i)
             {
                 for (int j = 0; j < pictureBox1.Width; ++j)
@@ -382,15 +381,14 @@ namespace JPEG
             label6.Text = "СКО: " + MSE.ToString();
 
             // Вывод разности изображений
-            result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            Bitmap difference = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             for (int i = 0; i < pictureBox2.Height; i++)
             {
                 for (int j = 0; j < pictureBox2.Width; j++)
-                {
-                    newY[i, j] = Y[i, j] - newY[i, j];
-                    int R = (int)newY[i, j];
-                    int G = (int)newY[i, j];
-                    int B = (int)newY[i, j];
+                {                    
+                    int R = (int)(Y[i, j] - newY[i, j]);
+                    int G = (int)(Y[i, j] - newY[i, j]);
+                    int B = (int)(Y[i, j] - newY[i, j]);
 
                     if (R > 255) R = 255;
                     if (G > 255) G = 255;
@@ -400,12 +398,10 @@ namespace JPEG
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
                     color = Color.FromArgb(255 - R, 255 - G, 255 - B);
-                    result.SetPixel(i, j, color);
+                    difference.SetPixel(i, j, color);
                 }
-                pictureBox7.Image = result;
-            }
-
-            result.Save("D:\\4 курс\\Программирование на кристалле\\pctr.png");
+                pictureBox7.Image = difference;
+            }            
         }
 
         private void button3_Click(object sender, EventArgs e)
