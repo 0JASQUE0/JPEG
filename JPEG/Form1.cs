@@ -104,6 +104,12 @@ namespace JPEG
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            pictureBox2.Image = null;
+            pictureBox3.Image = null;
+            pictureBox4.Image = null;
+            pictureBox5.Image = null;
+            pictureBox6.Image = null;
+            pictureBox7.Image = null;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -372,8 +378,32 @@ namespace JPEG
                     MSE += Math.Pow(Y[i, j] - newY[i, j], 2);
                 }
             }
-            MSE /= 4294964296.0;
+            MSE /= 65536.0;
             label6.Text = "СКО: " + MSE.ToString();
+
+            // Вывод разности изображений
+            result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            for (int i = 0; i < pictureBox2.Height; i++)
+            {
+                for (int j = 0; j < pictureBox2.Width; j++)
+                {
+                    newY[i, j] = Y[i, j] - newY[i, j];
+                    int R = (int)newY[i, j];
+                    int G = (int)newY[i, j];
+                    int B = (int)newY[i, j];
+
+                    if (R > 255) R = 255;
+                    if (G > 255) G = 255;
+                    if (B > 255) B = 255;
+
+                    if (R < 0) R = 0;
+                    if (G < 0) G = 0;
+                    if (B < 0) B = 0;
+                    color = Color.FromArgb(255 - R, 255 - G, 255 - B);
+                    result.SetPixel(i, j, color);
+                }
+                pictureBox7.Image = result;
+            }
 
             result.Save("D:\\4 курс\\Программирование на кристалле\\pctr.png");
         }
