@@ -30,6 +30,9 @@ namespace JPEG
         float[,] newCr;
         float[,] newY;
 
+        List<KeyValuePair<int, int>> RLEList = new List<KeyValuePair<int, int>>();
+        List<int> numberOfElement = new List<int>();
+
         public Form1()
         {
             InitializeComponent();
@@ -82,15 +85,17 @@ namespace JPEG
             return det;
         }
 
-        float convert(float value, float From1, float From2, float To1, float To2)
+        float Convert(float value, float From1, float From2, float To1, float To2)
         {
             return (value - From1) / (From2 - From1) * (To2 - To1) + To1;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            OpenFileDialog open_dialog = new OpenFileDialog(); //создание диалогового окна для выбора файла
-            open_dialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG)|*.BMP;*.JPG;*.GIF;*.PNG|All files (*.*)|*.*"; //формат загружаемого файла
+            OpenFileDialog open_dialog = new OpenFileDialog
+            {
+                Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG)|*.BMP;*.JPG;*.GIF;*.PNG|All files (*.*)|*.*" //формат загружаемого файла
+            }; //создание диалогового окна для выбора файла
             if (open_dialog.ShowDialog() == DialogResult.OK) //если в окне была нажата кнопка "ОК"
             {
                 try
@@ -181,6 +186,7 @@ namespace JPEG
                 }
             }
 
+            // Работа с блоками 8x8
             for (int ii = 0; ii < 32; ++ii)
             {
                 for (int jj = 0; jj < 32; ++jj)
@@ -271,6 +277,34 @@ namespace JPEG
                         }
                     }
 
+                    // RLE
+                    int counter = 0;
+                    KeyValuePair<int, int> temp;
+
+                    for (int i = 0; i < t.Length; ++i)
+                    {
+                        if (t[i] == 0)
+                            counter++;
+                        else
+                        {
+                            temp = new KeyValuePair<int, int>(counter, t[i]);
+                            counter = 0;
+                            if (!RLEList.Contains(temp))
+                            {
+                                RLEList.Add(temp);
+                                numberOfElement.Add(1);
+                            }
+                            else
+                            {
+                                numberOfElement[RLEList.FindIndex(p => p.Key == temp.Key && p.Value == temp.Value)]++;
+                                RLEList.Add(temp);
+                                numberOfElement.Add(0);
+                            }
+                        }
+                    }
+                    temp = new KeyValuePair<int, int>(-1, -1);
+                    RLEList.Add(temp);
+
 
                     // Обратное квантование
                     for (int i = 0; i < N; ++i)
@@ -280,8 +314,6 @@ namespace JPEG
                             test[i, j] *= q[i, j];
                         }
                     }
-
-
 
                     // Умножение на обратную матрицу ДКП
                     test = MatrixMultiplication(test, idct);
@@ -362,10 +394,10 @@ namespace JPEG
             gB.Clear(BackColor);
             for (int i = 0; i < 256; ++i)
             {
-                gY.DrawLine(pen, i, 256, i, pictureBox3.Height - convert(gistY[i], 0, gistY.Max(), 0, 64));
-                gR.DrawLine(penR, i, 256, i, pictureBox4.Height - convert(gistR[i], 0, gistR.Max(), 0, 64));
-                gG.DrawLine(penG, i, 256, i, pictureBox5.Height - convert(gistG[i], 0, gistG.Max(), 0, 64));
-                gB.DrawLine(penB, i, 256, i, pictureBox6.Height - convert(gistB[i], 0, gistB.Max(), 0, 64));
+                gY.DrawLine(pen, i, 256, i, pictureBox3.Height - Convert(gistY[i], 0, gistY.Max(), 0, 64));
+                gR.DrawLine(penR, i, 256, i, pictureBox4.Height - Convert(gistR[i], 0, gistR.Max(), 0, 64));
+                gG.DrawLine(penG, i, 256, i, pictureBox5.Height - Convert(gistG[i], 0, gistG.Max(), 0, 64));
+                gB.DrawLine(penB, i, 256, i, pictureBox6.Height - Convert(gistB[i], 0, gistB.Max(), 0, 64));
             }
 
             // Подсчет СКО
@@ -424,22 +456,3 @@ namespace JPEG
         }
     }
 }
-
-
-
-
-
-
-
-
-
-/*            {
-                        { 0.3539f, 0.4905f, 0.4616f, 0.4155f, 0.3539f, 0.2782f, 0.1912f, 0.0971f },
-                        { 0.3539f, 0.4158f, 0.1910f, -0.0977f, -0.3533f, -0.4901f, -0.4621f, -0.2782f },
-                        { 0.3538f, 0.2779f, -0.1916f, 0.4906f, -0.3534f, 0.0977f, 0.4619f, 0.4155f },
-                        { 0.3537f, 0.0975f, -0.4621f, -0.2779f, 0.3537f, 0.4158f, -0.1914f, -0.4905f },
-                        { 0.3535f, -0.0975f, -0.4619f, 0.2779f, 0.3535f, -0.4158f, -0.1913f, 0.4905f },
-                        { 0.3534f, -0.2779f, -0.1911f, 0.4906f, -0.3538f, -0.0977f, 0.4621f, -0.4155f },
-                        { 0.3533f, -0.4158f, 0.1917f, 0.0977f, -0.3539f, 0.4901f, -0.4619f, 0.2782f },
-                        { 0.3533f, -0.4905f, 0.4624f, -0.4155f, 0.3533f, -0.2782f, 0.1915f, -0.0971f }
-            };*/
