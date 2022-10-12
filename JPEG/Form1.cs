@@ -13,16 +13,22 @@ namespace JPEG
     public partial class Form1 : Form
     {
         private Bitmap image;
+        private Bitmap result;
 
-        /*float[,] Y;
-        float[,] Cb;
-        float[,] Cr;*/
         // Коэффициент сжатия CbCr
         int n;
         // Размер ДКП
         int N;
         // Коэффииент сжатия
         int Q;
+
+        float[,] Y;
+        float[,] Cb;
+        float[,] Cr;
+
+        float[,] newCb;
+        float[,] newCr;
+        float[,] newY;
 
         public Form1()
         {
@@ -104,9 +110,9 @@ namespace JPEG
         {
             
 
-            float[,] Y = new float[pictureBox1.Width, pictureBox1.Height];
-            float[,] Cb = new float[pictureBox1.Width, pictureBox1.Height];
-            float[,] Cr = new float[pictureBox1.Width, pictureBox1.Height];
+            Y = new float[pictureBox1.Width, pictureBox1.Height];
+            Cb = new float[pictureBox1.Width, pictureBox1.Height];
+            Cr = new float[pictureBox1.Width, pictureBox1.Height];
 
             YCbCrColor conv = new YCbCrColor();
             Color color;
@@ -133,8 +139,9 @@ namespace JPEG
 
             // Прореживание
             n = 2;
-            float[,] newCb = new float[pictureBox1.Width / n, pictureBox1.Height / n];
-            float[,] newCr = new float[pictureBox1.Width / n, pictureBox1.Height / n];
+            newCb = new float[pictureBox1.Width / n, pictureBox1.Height / n];
+            newCr = new float[pictureBox1.Width / n, pictureBox1.Height / n];
+            newY = new float[pictureBox1.Width, pictureBox1.Height];
 
             for (int i = 0; i < pictureBox1.Height / n; ++i)
             {
@@ -287,7 +294,7 @@ namespace JPEG
                     {
                         for (int j = 0; j < N; ++j)
                         {
-                            Y[i + 8 * ii, 8 * jj + j] = test[i, j];
+                            newY[i + 8 * ii, 8 * jj + j] = test[i, j];
                         }
                     }
 
@@ -299,23 +306,22 @@ namespace JPEG
             {
                 for (int j = 0; j < pictureBox1.Width; ++j)
                 {
-                    if ((int)Y[i, j] > 255)
+                    if ((int)newY[i, j] > 255)
                         gistY[255]++;
-                    else if ((int)Y[i, j] < 0)
+                    else if ((int)newY[i, j] < 0)
                         gistY[0]++;
                     else
-                        gistY[(int)Y[i, j]]++;
+                        gistY[(int)newY[i, j]]++;
                 }
             }
 
-            // Вывод изображения
-            Bitmap result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-
+            // Вывод изображения 
+            result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             for (int i = 0; i < pictureBox2.Height; i++)
             {
                 for (int j = 0; j < pictureBox2.Width; j++)
                 {
-                    conv.Y = Y[i, j];
+                    conv.Y = newY[i, j];
                     conv.Cb = newCb[i / n, j / n];
                     conv.Cr = newCr[i / n, j / n];
                     result.SetPixel(i, j, conv.ToRgbColor());
@@ -340,7 +346,10 @@ namespace JPEG
             Graphics gR = pictureBox4.CreateGraphics();
             Graphics gG = pictureBox5.CreateGraphics();
             Graphics gB = pictureBox6.CreateGraphics();
-            Pen pen = new Pen(Color.Black, 3);
+            Pen pen = new Pen(Color.Black, 1);
+            Pen penR = new Pen(Color.Red, 1);
+            Pen penG = new Pen(Color.Green, 1);
+            Pen penB = new Pen(Color.Blue, 1);
             gY.Clear(BackColor);
             gR.Clear(BackColor);
             gG.Clear(BackColor);
@@ -348,17 +357,44 @@ namespace JPEG
             for (int i = 0; i < 256; ++i)
             {
                 gY.DrawLine(pen, i, 256, i, pictureBox3.Height - convert(gistY[i], 0, gistY.Max(), 0, 64));
-                gR.DrawLine(pen, i, 256, i, pictureBox4.Height - convert(gistR[i], 0, gistR.Max(), 0, 64));
-                gG.DrawLine(pen, i, 256, i, pictureBox5.Height - convert(gistG[i], 0, gistG.Max(), 0, 64));
-                gB.DrawLine(pen, i, 256, i, pictureBox6.Height - convert(gistB[i], 0, gistB.Max(), 0, 64));
+                gR.DrawLine(penR, i, 256, i, pictureBox4.Height - convert(gistR[i], 0, gistR.Max(), 0, 64));
+                gG.DrawLine(penG, i, 256, i, pictureBox5.Height - convert(gistG[i], 0, gistG.Max(), 0, 64));
+                gB.DrawLine(penB, i, 256, i, pictureBox6.Height - convert(gistB[i], 0, gistB.Max(), 0, 64));
             }
 
-            //result.Save("D:\\4 курс\\Программирование на кристалле\\pctr.png");
+            // Подсчет СКО
+            double MSE = 0;
+
+            for (int i = 0; i < pictureBox1.Height; ++i)
+            {
+                for (int j = 0; j < pictureBox1.Width; ++j)
+                {
+                    MSE += Math.Pow(Y[i, j] - newY[i, j], 2);
+                }
+            }
+            MSE /= 4294964296.0;
+            label6.Text = "СКО: " + MSE.ToString();
+
+            result.Save("D:\\4 курс\\Программирование на кристалле\\pctr.png");
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            RGB rgb = new RGB(image, result);
+            rgb.ShowDialog(this);
+            rgb.Dispose();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            YCbCr yCbCr = new YCbCr(Y, Cb, Cr, newY, newCb, newCr, n);
+            yCbCr.ShowDialog(this);
+            yCbCr.Dispose();
         }
     }
 }
