@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -303,8 +304,19 @@ namespace JPEG
                         }
                     }
                     temp = new KeyValuePair<int, int>(-1, -1);
-                    RLEList.Add(temp);
-
+                    if (!RLEList.Contains(temp))
+                    {
+                        RLEList.Add(temp);
+                        numberOfElement.Add(1);
+                    }
+                    else
+                    {
+                        numberOfElement[RLEList.FindIndex(p => p.Key == temp.Key && p.Value == temp.Value)]++;
+                        RLEList.Add(temp);
+                        numberOfElement.Add(0);
+                    }
+                    //
+                    // Обратное RLE
 
                     // Обратное квантование
                     for (int i = 0; i < N; ++i)
@@ -335,11 +347,26 @@ namespace JPEG
                             newY[i + 8 * ii, 8 * jj + j] = test[i, j];
                         }
                     }
+                    //
+                }
+            }
+
+            //Кодирование методом Хаффмана
+            HuffmanTree huffmanTree = new HuffmanTree();
+            huffmanTree.Build(RLEList, numberOfElement);
+            BitArray encoded = huffmanTree.Encode(RLEList);
+
+            RLEList = huffmanTree.Decode(encoded);
+
+            for (int ii = 0; ii < 32; ++ii)
+            {
+                for (int jj = 0; jj < 32; ++jj)
+                { 
 
                 }
             }
 
-            // Получение данных для гистограммы яркости
+                    // Получение данных для гистограммы яркости
             for (int i = 0; i < pictureBox1.Height; ++i)
             {
                 for (int j = 0; j < pictureBox1.Width; ++j)
