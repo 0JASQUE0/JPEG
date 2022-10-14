@@ -34,6 +34,10 @@ namespace JPEG
         List<KeyValuePair<int, int>> RLEList;
         List<int> numberOfElement;
 
+        private Point RectStartPoint;
+        private Rectangle Rect = new Rectangle();
+        private Brush selectionBrush = new SolidBrush(Color.FromArgb(128, 72, 145, 220));
+
         public Form1()
         {
             InitializeComponent();
@@ -473,6 +477,53 @@ namespace JPEG
             YCbCr yCbCr = new YCbCr(Y, Cb, Cr, newY, newCb, newCr, n);
             yCbCr.ShowDialog(this);
             yCbCr.Dispose();
+        }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            RectStartPoint = e.Location;
+            Invalidate();
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+
+            Point tempEndPoint = e.Location;
+
+            Rect.Location = new Point(Math.Min(RectStartPoint.X, tempEndPoint.X), Math.Min(RectStartPoint.Y, tempEndPoint.Y));
+
+            int size;
+            if (Math.Abs(RectStartPoint.X - tempEndPoint.X) > Math.Abs(RectStartPoint.Y - tempEndPoint.Y))
+                size = Math.Abs(RectStartPoint.X - tempEndPoint.X);
+            else
+                size = Math.Abs(RectStartPoint.Y - tempEndPoint.Y);
+            Rect.Size = new Size(size, size);
+
+            pictureBox1.Invalidate();
+        }
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        {
+            if (pictureBox1.Image != null)
+            {
+                if (Rect != null && Rect.Width > 0 && Rect.Height > 0)
+                {
+                    e.Graphics.FillRectangle(selectionBrush, Rect);
+                }
+            }
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                if (Rect.Contains(e.Location))
+                {
+                    MessageBox.Show("Error");
+                }
+            }
         }
     }
 }
