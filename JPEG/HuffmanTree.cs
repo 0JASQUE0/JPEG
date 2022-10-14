@@ -15,7 +15,7 @@ namespace JPEG
 
         public void Build(List<KeyValuePair<int, int>> RLEList, List<int> numberOfElement)
         {
-            for (int i = 0; i < numberOfElement.Count; ++i)
+            for (int i = 0; i < RLEList.Count; ++i)
                 if (numberOfElement[i] != 0)
                     nodes.Add(new Node(RLEList[i], numberOfElement[i]));
 

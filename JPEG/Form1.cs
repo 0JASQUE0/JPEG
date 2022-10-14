@@ -31,8 +31,8 @@ namespace JPEG
         float[,] newCr;
         float[,] newY;
 
-        List<KeyValuePair<int, int>> RLEList = new List<KeyValuePair<int, int>>();
-        List<int> numberOfElement = new List<int>();
+        List<KeyValuePair<int, int>> RLEList;
+        List<int> numberOfElement;
 
         public Form1()
         {
@@ -80,7 +80,7 @@ namespace JPEG
             {
                 for (int j = 0; j < matrix.GetLength(1); j++)
                 {
-                    det += (float)(Math.Pow(-1,0+j)*matrix[0, j] * Determ(GetMinor(matrix, 0, j)));
+                    det += (float)(Math.Pow(-1, 0 + j) * matrix[0, j] * Determ(GetMinor(matrix, 0, j)));
                 }
             }
             return det;
@@ -120,7 +120,7 @@ namespace JPEG
 
         private void button2_Click(object sender, EventArgs e)
         {
-            
+
 
             Y = new float[pictureBox1.Width, pictureBox1.Height];
             Cb = new float[pictureBox1.Width, pictureBox1.Height];
@@ -132,7 +132,7 @@ namespace JPEG
             int[] gistR = new int[256];
             int[] gistG = new int[256];
             int[] gistB = new int[256];
-            int[] gistY = new int[256];            
+            int[] gistY = new int[256];
 
             //image = new Bitmap(pictureBox1.Image);
 
@@ -150,7 +150,7 @@ namespace JPEG
             }
 
             // Прореживание
-            n = 2;
+            n = Int32.Parse(textBox2.Text);
             newCb = new float[pictureBox1.Width / n, pictureBox1.Height / n];
             newCr = new float[pictureBox1.Width / n, pictureBox1.Height / n];
             newY = new float[pictureBox1.Width, pictureBox1.Height];
@@ -187,6 +187,21 @@ namespace JPEG
                 }
             }
 
+            // Матрица квантования
+            Q = Int32.Parse(textBox1.Text);
+            int[,] q = new int[N, N];
+
+            for (int i = 0; i < N; ++i)
+            {
+                for (int j = 0; j < N; ++j)
+                {
+                    q[i, j] = 1 + ((1 + i + j) * Q);
+                }
+            }
+
+            RLEList = new List<KeyValuePair<int, int>>();
+            numberOfElement = new List<int>();
+
             // Работа с блоками 8x8
             for (int ii = 0; ii < 32; ++ii)
             {
@@ -217,18 +232,7 @@ namespace JPEG
                     // Умножение на матрицу ДКП
                     test = MatrixMultiplication(test, dct);
 
-                    // Квантование
-                    Q = 2;
-                    int[,] q = new int[N, N];
-
-                    for (int i = 0; i < N; ++i)
-                    {
-                        for (int j = 0; j < N; ++j)
-                        {
-                            q[i, j] = 1 + ((1 + i + j) * Q);
-                        }
-                    }
-
+                    // Квантование                    
                     for (int i = 0; i < N; ++i)
                     {
                         for (int j = 0; j < N; ++j)
@@ -315,8 +319,6 @@ namespace JPEG
                         RLEList.Add(temp);
                         numberOfElement.Add(0);
                     }
-                    //
-                    // Обратное RLE
 
                     // Обратное квантование
                     for (int i = 0; i < N; ++i)
@@ -347,26 +349,17 @@ namespace JPEG
                             newY[i + 8 * ii, 8 * jj + j] = test[i, j];
                         }
                     }
-                    //
                 }
             }
 
-            //Кодирование методом Хаффмана
+            // Кодирование методом Хаффмана
             HuffmanTree huffmanTree = new HuffmanTree();
             huffmanTree.Build(RLEList, numberOfElement);
             BitArray encoded = huffmanTree.Encode(RLEList);
 
-            RLEList = huffmanTree.Decode(encoded);
+            label9.Text = "Коэффициент сжатия: " + ((256.0 * 256.0 * 3) / (encoded.Length / 8 + 2 * (256.0 / n) * (256.0 / n)));           
 
-            for (int ii = 0; ii < 32; ++ii)
-            {
-                for (int jj = 0; jj < 32; ++jj)
-                { 
-
-                }
-            }
-
-                    // Получение данных для гистограммы яркости
+            // Получение данных для гистограммы яркости
             for (int i = 0; i < pictureBox1.Height; ++i)
             {
                 for (int j = 0; j < pictureBox1.Width; ++j)
@@ -444,7 +437,7 @@ namespace JPEG
             for (int i = 0; i < pictureBox2.Height; i++)
             {
                 for (int j = 0; j < pictureBox2.Width; j++)
-                {                    
+                {
                     int R = (int)(Y[i, j] - newY[i, j]);
                     int G = (int)(Y[i, j] - newY[i, j]);
                     int B = (int)(Y[i, j] - newY[i, j]);
@@ -460,7 +453,7 @@ namespace JPEG
                     difference.SetPixel(i, j, color);
                 }
                 pictureBox7.Image = difference;
-            }            
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)
