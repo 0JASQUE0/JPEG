@@ -19,8 +19,9 @@ namespace JPEG
         public float[,] newCb;
         public float[,] newCr;
         public int N;
+        public int size;
 
-        public YCbCr(float[,] Y1, float[,] Cb1, float[,] Cr1, float[,] Y2, float[,] Cb2, float[,] Cr2, int n)
+        public YCbCr(float[,] Y1, float[,] Cb1, float[,] Cr1, float[,] Y2, float[,] Cb2, float[,] Cr2, int n, int Size)
         {
             Y = Y1;
             Cb = Cb1;
@@ -29,19 +30,24 @@ namespace JPEG
             newCb = Cb2;
             newCr = Cr2;
             N = n;
+            size = Size;
             InitializeComponent();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //Исходное изображение            
-            Color color;
-            Graphics gY = pictureBox1.CreateGraphics();
-            SolidBrush brushY = new SolidBrush(Color.Black);
-            gY.Clear(BackColor);
-            for (int i = 0; i < pictureBox1.Height; ++i)
+            Bitmap img1 = new Bitmap(size, size);
+            Bitmap img2 = new Bitmap(size, size);
+            Bitmap img3 = new Bitmap(size, size);
+            Bitmap img4 = new Bitmap(size, size);
+            Bitmap img5 = new Bitmap(size, size);
+            Bitmap img6 = new Bitmap(size, size);
+
+            //Исходное изображение          
+            pictureBox1.Image = null;
+            for (int i = 0; i < size; ++i)
             {
-                for (int j = 0; j < pictureBox1.Width; ++j)
+                for (int j = 0; j < size; ++j)
                 {
                     int R = (int)Y[i, j];
                     int G = (int)Y[i, j];
@@ -54,17 +60,15 @@ namespace JPEG
                     if (R < 0) R = 0;
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
-                    color = Color.FromArgb(R,G,B);
-                    brushY.Color = color;
-                    gY.FillRectangle(brushY, i, j, 1, 1);
+                    img1.SetPixel(i, j, Color.FromArgb(R, G, B));
                 }
             }
-            Graphics gCb = pictureBox2.CreateGraphics();
-            SolidBrush brushCb = new SolidBrush(Color.Black);
-            gCb.Clear(BackColor);
-            for (int i = 0; i < pictureBox2.Height; ++i)
+            pictureBox1.Image = img1;
+
+            pictureBox2.Image = null;
+            for (int i = 0; i < size; ++i)
             {
-                for (int j = 0; j < pictureBox2.Width; ++j)
+                for (int j = 0; j < size; ++j)
                 {
                     int R = (int)Y[i, j];
                     int G = (int)Cb[i, j];
@@ -77,17 +81,15 @@ namespace JPEG
                     if (R < 0) R = 0;
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
-                    color = Color.FromArgb(R, G, B);
-                    brushCb.Color = color;
-                    gCb.FillRectangle(brushCb, i, j, 1, 1);
+                    img2.SetPixel(i, j, Color.FromArgb(R, G, B));
                 }
             }
-            Graphics gCr = pictureBox3.CreateGraphics();
-            SolidBrush brushCr = new SolidBrush(Color.Black);
-            gCr.Clear(BackColor);
-            for (int i = 0; i < pictureBox3.Height; ++i)
+            pictureBox2.Image = img2;
+
+            pictureBox3.Image = null;
+            for (int i = 0; i < size; ++i)
             {
-                for (int j = 0; j < pictureBox3.Width; ++j)
+                for (int j = 0; j < size; ++j)
                 {
                     int R = (int)Y[i, j];
                     int G = (int)Y[i, j];
@@ -100,18 +102,15 @@ namespace JPEG
                     if (R < 0) R = 0;
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
-                    color = Color.FromArgb(R, G, B);
-                    brushCr.Color = color;
-                    gCr.FillRectangle(brushCr, i, j, 1, 1);
+                    img3.SetPixel(i, j, Color.FromArgb(R, G, B));
                 }
             }
+            pictureBox3.Image = img3;
 
-            Graphics gY1 = pictureBox4.CreateGraphics();
-            SolidBrush brushY1 = new SolidBrush(Color.Black);
-            gY1.Clear(BackColor);
-            for (int i = 0; i < pictureBox4.Height; ++i)
+            pictureBox4.Image = null;
+            for (int i = 0; i < size; ++i)
             {
-                for (int j = 0; j < pictureBox4.Width; ++j)
+                for (int j = 0; j < size; ++j)
                 {
                     int R = (int)newY[i, j];
                     int G = (int)newY[i, j];
@@ -124,17 +123,15 @@ namespace JPEG
                     if (R < 0) R = 0;
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
-                    color = Color.FromArgb(R, G, B);
-                    brushY1.Color = color;
-                    gY1.FillRectangle(brushY1, i, j, 1, 1);
+                    img4.SetPixel(i, j, Color.FromArgb(R, G, B));
                 }
             }
-            Graphics gCb1 = pictureBox5.CreateGraphics();
-            SolidBrush brushCb1 = new SolidBrush(Color.Black);
-            gCb1.Clear(BackColor);
-            for (int i = 0; i < pictureBox5.Height; ++i)
+            pictureBox4.Image = img4;
+
+            pictureBox5.Image = null;
+            for (int i = 0; i < size; ++i)
             {
-                for (int j = 0; j < pictureBox5.Width; ++j)
+                for (int j = 0; j < size; ++j)
                 {
                     int R = (int)newY[i, j];
                     int G = (int)newCb[i / N, j / N];
@@ -147,17 +144,15 @@ namespace JPEG
                     if (R < 0) R = 0;
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
-                    color = Color.FromArgb(R, G, B);
-                    brushCb1.Color = color;
-                    gCb1.FillRectangle(brushCb1, i, j, 1, 1);
+                    img5.SetPixel(i, j, Color.FromArgb(R, G, B));
                 }
             }
-            Graphics gCr1 = pictureBox6.CreateGraphics();
-            SolidBrush brushCr1 = new SolidBrush(Color.Black);
-            gCr1.Clear(BackColor);
-            for (int i = 0; i < pictureBox6.Height; ++i)
+            pictureBox5.Image = img5;
+
+            pictureBox6.Image = null;
+            for (int i = 0; i < size; ++i)
             {
-                for (int j = 0; j < pictureBox6.Width; ++j)
+                for (int j = 0; j < size; ++j)
                 {
                     int R = (int)newY[i, j];
                     int G = (int)newY[i, j];
@@ -170,11 +165,10 @@ namespace JPEG
                     if (R < 0) R = 0;
                     if (G < 0) G = 0;
                     if (B < 0) B = 0;
-                    color = Color.FromArgb(R, G, B);
-                    brushCr1.Color = color;
-                    gCr1.FillRectangle(brushCr1, i, j, 1, 1);
+                    img6.SetPixel(i, j, Color.FromArgb(R, G, B));
                 }
             }
+            pictureBox6.Image = img6;
         }
 
         private void button2_Click(object sender, EventArgs e)

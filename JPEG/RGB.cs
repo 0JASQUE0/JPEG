@@ -14,91 +14,68 @@ namespace JPEG
     {
         public Bitmap image;
         public Bitmap result;
-        public RGB(Bitmap bitmap1, Bitmap bitmap2)
+        public int size;
+        public RGB(Bitmap bitmap1, Bitmap bitmap2, int Size)
         {
             image = bitmap1;
             result = bitmap2;
+            size = Size;
             InitializeComponent();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            Bitmap img1 = new Bitmap(image);
+            Bitmap img2 = new Bitmap(image);
+            Bitmap img3 = new Bitmap(image);
+            Bitmap img4 = new Bitmap(image);
+            Bitmap img5 = new Bitmap(image);
+            Bitmap img6 = new Bitmap(image);
             //Исходное изображение
-            Color color;
-            Graphics gR = pictureBox1.CreateGraphics();
-            SolidBrush brushR = new SolidBrush(Color.Black);
-            gR.Clear(BackColor);
-            for (int i = 0; i < pictureBox1.Height; ++i)
-            {
-                for (int j = 0; j < pictureBox1.Width; ++j)
-                {
-                    color = image.GetPixel(i, j);
-                    brushR.Color = Color.FromArgb(color.R, 0, 0);
-                    gR.FillRectangle(brushR, i, j, 1, 1);
-                }
-            }
-            Graphics gG = pictureBox2.CreateGraphics();
-            SolidBrush brushG = new SolidBrush(Color.Black);
-            gG.Clear(BackColor);
-            for (int i = 0; i < pictureBox2.Height; ++i)
-            {
-                for (int j = 0; j < pictureBox2.Width; ++j)
-                {
-                    color = image.GetPixel(i, j);
-                    brushG.Color = Color.FromArgb(0, color.G, 0);
-                    gG.FillRectangle(brushG, i, j, 1, 1);
-                }
-            }
-            Graphics gB = pictureBox3.CreateGraphics();
-            SolidBrush brushB = new SolidBrush(Color.Black);
-            gB.Clear(BackColor);
-            for (int i = 0; i < pictureBox3.Height; ++i)
-            {
-                for (int j = 0; j < pictureBox3.Width; ++j)
-                {
-                    color = image.GetPixel(i, j);
-                    brushB.Color = Color.FromArgb(0, 0, color.B);
-                    gB.FillRectangle(brushB, i, j, 1, 1);
-                }
-            }
+
+            pictureBox1.Image = null;
+            for (int i = 0; i < size; ++i)            
+                for (int j = 0; j < size; ++j)                
+                    img1.SetPixel(i, j, Color.FromArgb(image.GetPixel(i, j).R, 0, 0));                
+            
+            pictureBox1.Image = img1;
+
+
+            pictureBox2.Image = null;
+            for (int i = 0; i < size; ++i)            
+                for (int j = 0; j < size; ++j)                
+                    img2.SetPixel(i, j, Color.FromArgb(0, image.GetPixel(i, j).G, 0));
+
+            pictureBox2.Image = img2;
+
+            pictureBox3.Image = null;
+            for (int i = 0; i < size; ++i)            
+                for (int j = 0; j < size; ++j)                
+                    img3.SetPixel(i, j, Color.FromArgb(0, 0, image.GetPixel(i, j).B));
+
+            pictureBox3.Image = img3;
 
             //Обработанное изображение
-            Graphics gR1 = pictureBox4.CreateGraphics();
-            SolidBrush brushR1 = new SolidBrush(Color.Black);
-            gR1.Clear(BackColor);
-            for (int i = 0; i < pictureBox4.Height; ++i)
-            {
-                for (int j = 0; j < pictureBox4.Width; ++j)
-                {
-                    color = result.GetPixel(i, j);
-                    brushR1.Color = Color.FromArgb(color.R, 0, 0);
-                    gR1.FillRectangle(brushR1, i, j, 1, 1);
-                }
-            }
-            Graphics gG1 = pictureBox5.CreateGraphics();
-            SolidBrush brushG1 = new SolidBrush(Color.Black);
-            gG1.Clear(BackColor);
-            for (int i = 0; i < pictureBox5.Height; ++i)
-            {
-                for (int j = 0; j < pictureBox5.Width; ++j)
-                {
-                    color = result.GetPixel(i, j);
-                    brushG1.Color = Color.FromArgb(0, color.G, 0);
-                    gG1.FillRectangle(brushG1, i, j, 1, 1);
-                }
-            }
-            Graphics gB1 = pictureBox6.CreateGraphics();
-            SolidBrush brushB1 = new SolidBrush(Color.Black);
-            gB1.Clear(BackColor);
-            for (int i = 0; i < pictureBox6.Height; ++i)
-            {
-                for (int j = 0; j < pictureBox6.Width; ++j)
-                {
-                    color = result.GetPixel(i, j);
-                    brushB1.Color = Color.FromArgb(0, 0, color.B);
-                    gB1.FillRectangle(brushB1, i, j, 1, 1);
-                }
-            }
+            pictureBox4.Image = null;
+            for (int i = 0; i < size; ++i)            
+                for (int j = 0; j < size; ++j)                
+                    img4.SetPixel(i, j, Color.FromArgb(result.GetPixel(i, j).R, 0, 0));
+
+            pictureBox4.Image = img4;
+
+            pictureBox5.Image = null;
+            for (int i = 0; i < size; ++i)            
+                for (int j = 0; j < size; ++j)                
+                    img5.SetPixel(i, j, Color.FromArgb(0, result.GetPixel(i, j).G, 0));
+
+            pictureBox5.Image = img5;
+
+            pictureBox6.Image = null;
+            for (int i = 0; i < size; ++i)            
+                for (int j = 0; j < size; ++j)                
+                    img6.SetPixel(i, j, Color.FromArgb(0, 0, result.GetPixel(i, j).B));
+
+            pictureBox6.Image = img6;
         }
 
         private void button2_Click(object sender, EventArgs e)

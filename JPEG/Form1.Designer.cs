@@ -52,6 +52,8 @@ namespace JPEG
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox2 = new System.Windows.Forms.TextBox();
+            this.pictureBox8 = new System.Windows.Forms.PictureBox();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -59,6 +61,7 @@ namespace JPEG
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -76,7 +79,7 @@ namespace JPEG
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Location = new System.Drawing.Point(274, 12);
+            this.pictureBox2.Location = new System.Drawing.Point(536, 12);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(256, 256);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -196,7 +199,7 @@ namespace JPEG
             // 
             // pictureBox7
             // 
-            this.pictureBox7.Location = new System.Drawing.Point(536, 12);
+            this.pictureBox7.Location = new System.Drawing.Point(798, 12);
             this.pictureBox7.Name = "pictureBox7";
             this.pictureBox7.Size = new System.Drawing.Size(256, 256);
             this.pictureBox7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -269,17 +272,41 @@ namespace JPEG
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(721, 291);
+            this.textBox2.Location = new System.Drawing.Point(721, 402);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(62, 20);
             this.textBox2.TabIndex = 27;
             this.textBox2.Text = "2";
             // 
+            // pictureBox8
+            // 
+            this.pictureBox8.Location = new System.Drawing.Point(274, 12);
+            this.pictureBox8.Name = "pictureBox8";
+            this.pictureBox8.Size = new System.Drawing.Size(256, 256);
+            this.pictureBox8.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox8.TabIndex = 28;
+            this.pictureBox8.TabStop = false;
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "2",
+            "4",
+            "8"});
+            this.comboBox1.Location = new System.Drawing.Point(721, 291);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(62, 21);
+            this.comboBox1.TabIndex = 29;
+            this.comboBox1.Text = "2";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(826, 578);
+            this.ClientSize = new System.Drawing.Size(1067, 578);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.pictureBox8);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.textBox1);
@@ -305,7 +332,7 @@ namespace JPEG
             this.Controls.Add(this.pictureBox1);
             this.MaximizeBox = false;
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "JPEG";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
@@ -313,6 +340,7 @@ namespace JPEG
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -343,6 +371,8 @@ namespace JPEG
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.PictureBox pictureBox8;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
 

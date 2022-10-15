@@ -14,6 +14,7 @@ namespace JPEG
     public partial class Form1 : Form
     {
         private Bitmap image;
+        private Bitmap img;
         private Bitmap result;
 
         // Коэффициент сжатия CbCr
@@ -106,6 +107,7 @@ namespace JPEG
                 try
                 {
                     image = new Bitmap(open_dialog.FileName);
+                    image = new Bitmap(image, 256, 256);
                     pictureBox1.Image = image;
                 }
                 catch
@@ -114,17 +116,24 @@ namespace JPEG
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            Rect = new Rectangle();
+            //Rect.Location = new Point(0, 0);
+            pictureBox1.Image = image;
             pictureBox2.Image = null;
             pictureBox3.Image = null;
             pictureBox4.Image = null;
             pictureBox5.Image = null;
             pictureBox6.Image = null;
             pictureBox7.Image = null;
+            pictureBox8.Image = null;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-
+            int size = Rect.Size.Width;
+            if (size % 8 != 0)
+                size = (size / 8) * 8 + 8;
+            Rect.Size = new Size(size, size);
 
             Y = new float[pictureBox1.Width, pictureBox1.Height];
             Cb = new float[pictureBox1.Width, pictureBox1.Height];
@@ -138,14 +147,28 @@ namespace JPEG
             int[] gistB = new int[256];
             int[] gistY = new int[256];
 
-            //image = new Bitmap(pictureBox1.Image);
+            
+
+            if (Rect.Location.X != 0 && Rect.Location.Y != 0)
+            {
+                img = new Bitmap(image, Rect.Width, Rect.Height);
+                for (int i = Rect.Location.X; i < Rect.Location.X + Rect.Width; ++i)
+                    for (int j = Rect.Location.Y; j < Rect.Location.Y + Rect.Height; ++j)
+                        img.SetPixel(i - Rect.Location.X, j - Rect.Location.Y, image.GetPixel(i, j));
+
+                pictureBox8.Image = img;
+            }
+            else
+                img = image;
+
+            int sizeOfImage = img.Size.Width;
 
             // RBG to YCbCr
-            for (int i = 0; i < pictureBox1.Height; ++i)
+            for (int i = 0; i < sizeOfImage; ++i)
             {
-                for (int j = 0; j < pictureBox1.Width; ++j)
+                for (int j = 0; j < sizeOfImage; ++j)
                 {
-                    color = image.GetPixel(i, j);
+                    color = img.GetPixel(i, j);
                     conv = conv.FromRgbColor(color);
                     Y[i, j] = conv.Y;
                     Cb[i, j] = conv.Cb;
@@ -154,14 +177,14 @@ namespace JPEG
             }
 
             // Прореживание
-            n = Int32.Parse(textBox2.Text);
-            newCb = new float[pictureBox1.Width / n, pictureBox1.Height / n];
-            newCr = new float[pictureBox1.Width / n, pictureBox1.Height / n];
-            newY = new float[pictureBox1.Width, pictureBox1.Height];
+            n = Int32.Parse(comboBox1.Text);
+            newCb = new float[sizeOfImage / n, sizeOfImage / n];
+            newCr = new float[sizeOfImage / n, sizeOfImage / n];
+            newY = new float[sizeOfImage, sizeOfImage];
 
-            for (int i = 0; i < pictureBox1.Height / n; ++i)
+            for (int i = 0; i < sizeOfImage / n; ++i)
             {
-                for (int j = 0; j < pictureBox1.Width / n; ++j)
+                for (int j = 0; j < sizeOfImage / n; ++j)
                 {
                     newCb[i, j] += (Cb[i * n, j * n] + Cb[i * n, j * n + 1] + Cb[i * n + 1, j * n] + Cb[i * n + 1, j * n + 1]) / 4;
                     newCr[i, j] += (Cr[i * n, j * n] + Cr[i * n, j * n + 1] + Cr[i * n + 1, j * n] + Cr[i * n + 1, j * n + 1]) / 4;
@@ -207,9 +230,9 @@ namespace JPEG
             numberOfElement = new List<int>();
 
             // Работа с блоками 8x8
-            for (int ii = 0; ii < 32; ++ii)
+            for (int ii = 0; ii < sizeOfImage / 8; ++ii)
             {
-                for (int jj = 0; jj < 32; ++jj)
+                for (int jj = 0; jj < sizeOfImage / 8; ++jj)
                 {
 
                     int[,] test = new int[8, 8]
@@ -361,12 +384,12 @@ namespace JPEG
             huffmanTree.Build(RLEList, numberOfElement);
             BitArray encoded = huffmanTree.Encode(RLEList);
 
-            label9.Text = "Коэффициент сжатия: " + ((256.0 * 256.0 * 3) / (encoded.Length / 8 + 2 * (256.0 / n) * (256.0 / n)));           
+            label9.Text = "Коэффициент сжатия: " + ((sizeOfImage * sizeOfImage * 3) / (encoded.Length / 8 + 2 * ((float)sizeOfImage / n) * ((float)sizeOfImage / n)));           
 
             // Получение данных для гистограммы яркости
-            for (int i = 0; i < pictureBox1.Height; ++i)
+            for (int i = 0; i < sizeOfImage; ++i)
             {
-                for (int j = 0; j < pictureBox1.Width; ++j)
+                for (int j = 0; j < sizeOfImage; ++j)
                 {
                     if ((int)newY[i, j] > 255)
                         gistY[255]++;
@@ -378,10 +401,10 @@ namespace JPEG
             }
 
             // Вывод изображения 
-            result = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            for (int i = 0; i < pictureBox2.Height; i++)
+            result = new Bitmap(sizeOfImage, sizeOfImage);
+            for (int i = 0; i < sizeOfImage; i++)
             {
-                for (int j = 0; j < pictureBox2.Width; j++)
+                for (int j = 0; j < sizeOfImage; j++)
                 {
                     conv.Y = newY[i, j];
                     conv.Cb = newCb[i / n, j / n];
@@ -392,9 +415,9 @@ namespace JPEG
             }
 
             // Получение данных для гистограммы RGB
-            for (int i = 0; i < pictureBox1.Height; ++i)
+            for (int i = 0; i < sizeOfImage; ++i)
             {
-                for (int j = 0; j < pictureBox1.Width; ++j)
+                for (int j = 0; j < sizeOfImage; ++j)
                 {
                     color = result.GetPixel(i, j);
                     gistR[color.R]++;
@@ -426,9 +449,9 @@ namespace JPEG
 
             // Подсчет СКО
             double MSE = 0;
-            for (int i = 0; i < pictureBox1.Height; ++i)
+            for (int i = 0; i < sizeOfImage; ++i)
             {
-                for (int j = 0; j < pictureBox1.Width; ++j)
+                for (int j = 0; j < sizeOfImage; ++j)
                 {
                     MSE += Math.Pow(Y[i, j] - newY[i, j], 2);
                 }
@@ -437,10 +460,10 @@ namespace JPEG
             label6.Text = "СКО: " + MSE.ToString();
 
             // Вывод разности изображений
-            Bitmap difference = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            for (int i = 0; i < pictureBox2.Height; i++)
+            Bitmap difference = new Bitmap(sizeOfImage, sizeOfImage);
+            for (int i = 0; i < sizeOfImage; i++)
             {
-                for (int j = 0; j < pictureBox2.Width; j++)
+                for (int j = 0; j < sizeOfImage; j++)
                 {
                     int R = (int)(Y[i, j] - newY[i, j]);
                     int G = (int)(Y[i, j] - newY[i, j]);
@@ -467,14 +490,14 @@ namespace JPEG
 
         private void button4_Click(object sender, EventArgs e)
         {
-            RGB rgb = new RGB(image, result);
+            RGB rgb = new RGB(img, result, img.Height);
             rgb.ShowDialog(this);
             rgb.Dispose();
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            YCbCr yCbCr = new YCbCr(Y, Cb, Cr, newY, newCb, newCr, n);
+            YCbCr yCbCr = new YCbCr(Y, Cb, Cr, newY, newCb, newCr, n, img.Height);
             yCbCr.ShowDialog(this);
             yCbCr.Dispose();
         }
