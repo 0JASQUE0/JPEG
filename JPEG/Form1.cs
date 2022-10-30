@@ -56,6 +56,18 @@ namespace JPEG
             return result;
         }
 
+        private int[,] MatrixMultiplication(float[,] matrix1, int[,] matrix2)
+        {
+            if (matrix1.GetUpperBound(1) != matrix2.GetUpperBound(0))
+                throw new Exception("These matrices cannot be multiplied");
+            int[,] result = new int[matrix1.GetUpperBound(0) + 1, matrix2.GetUpperBound(1) + 1];
+            for (int i = 0; i < matrix1.GetUpperBound(0) + 1; ++i)
+                for (int j = 0; j < result.GetUpperBound(1) + 1; ++j)
+                    for (int k = 0; k < matrix1.GetUpperBound(1) + 1; ++k)
+                        result[i, j] += (int)(matrix1[i, k] * matrix2[k, j]);
+            return result;
+        }
+
         public float[,] GetMinor(float[,] matrix, int row, int column)
         {
             if (matrix.GetLength(0) != matrix.GetLength(1)) throw new Exception(" Число строк в матрице не совпадает с числом столбцов");
@@ -126,6 +138,10 @@ namespace JPEG
             pictureBox6.Image = null;
             pictureBox7.Image = null;
             pictureBox8.Image = null;
+            pictureBox9.Image = null;
+            pictureBox10.Image = null;
+            pictureBox11.Image = null;
+            pictureBox12.Image = null;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -147,7 +163,12 @@ namespace JPEG
             int[] gistB = new int[256];
             int[] gistY = new int[256];
 
-            
+            int[] gistNewR = new int[256];
+            int[] gistNewG = new int[256];
+            int[] gistNewB = new int[256];
+            int[] gistNewY = new int[256];
+
+
 
             if (Rect.Location.X != 0 && Rect.Location.Y != 0)
             {
@@ -210,7 +231,8 @@ namespace JPEG
             {
                 for (int j = 0; j < N; ++j)
                 {
-                    idct[i, j] = (float)((1.0 / det) * dct[j, i]);
+                    idct[i, j] = dct[j, i];
+                    //idct[i, j] = (float)((1.0 / det) * dct[j, i]);
                 }
             }
 
@@ -257,7 +279,7 @@ namespace JPEG
                     }
 
                     // Умножение на матрицу ДКП
-                    test = MatrixMultiplication(test, dct);
+                    test = MatrixMultiplication(dct, MatrixMultiplication(test, idct));
 
                     // Квантование                    
                     for (int i = 0; i < N; ++i)
@@ -355,9 +377,8 @@ namespace JPEG
                             test[i, j] *= q[i, j];
                         }
                     }
-
-                    // Умножение на обратную матрицу ДКП
-                    test = MatrixMultiplication(test, idct);
+                    
+                    test = MatrixMultiplication(idct, MatrixMultiplication(test, dct));
 
                     // Обратное усреднение
                     for (int i = 0; i < N; ++i)
@@ -384,19 +405,27 @@ namespace JPEG
             huffmanTree.Build(RLEList, numberOfElement);
             BitArray encoded = huffmanTree.Encode(RLEList);
 
-            label9.Text = "Коэффициент сжатия: " + ((sizeOfImage * sizeOfImage * 3) / (encoded.Length / 8 + 2 * ((float)sizeOfImage / n) * ((float)sizeOfImage / n)));           
+            label9.Text = "Коэффициент сжатия: " + (float)((sizeOfImage * sizeOfImage) / (encoded.Length / 8.0));
+            //label9.Text = "Коэффициент сжатия: " + ((sizeOfImage * sizeOfImage * 3) / (encoded.Length / 8 + 2 * ((float)sizeOfImage / n) * ((float)sizeOfImage / n)));
 
             // Получение данных для гистограммы яркости
             for (int i = 0; i < sizeOfImage; ++i)
             {
                 for (int j = 0; j < sizeOfImage; ++j)
                 {
-                    if ((int)newY[i, j] > 255)
+                    if ((int)Y[i, j] > 255)
                         gistY[255]++;
-                    else if ((int)newY[i, j] < 0)
+                    else if ((int)Y[i, j] < 0)
                         gistY[0]++;
                     else
-                        gistY[(int)newY[i, j]]++;
+                        gistY[(int)Y[i, j]]++;
+
+                    if ((int)newY[i, j] > 255)
+                        gistNewY[255]++;
+                    else if ((int)newY[i, j] < 0)
+                        gistNewY[0]++;
+                    else
+                        gistNewY[(int)newY[i, j]]++;
                 }
             }
 
@@ -407,8 +436,8 @@ namespace JPEG
                 for (int j = 0; j < sizeOfImage; j++)
                 {
                     conv.Y = newY[i, j];
-                    conv.Cb = newCb[i / n, j / n];
-                    conv.Cr = newCr[i / n, j / n];
+                    conv.Cb = Cb[i, j];
+                    conv.Cr = Cr[i, j];
                     result.SetPixel(i, j, conv.ToRgbColor());
                 }
                 pictureBox2.Image = result;
@@ -419,10 +448,15 @@ namespace JPEG
             {
                 for (int j = 0; j < sizeOfImage; ++j)
                 {
-                    color = result.GetPixel(i, j);
+                    color = image.GetPixel(i, j);
                     gistR[color.R]++;
                     gistG[color.G]++;
                     gistB[color.B]++;
+
+                    color = result.GetPixel(i, j);
+                    gistNewR[color.R]++;
+                    gistNewG[color.R]++;
+                    gistNewB[color.R]++;
                 }
             }
 
@@ -431,20 +465,28 @@ namespace JPEG
             Graphics gR = pictureBox4.CreateGraphics();
             Graphics gG = pictureBox5.CreateGraphics();
             Graphics gB = pictureBox6.CreateGraphics();
-            Pen pen = new Pen(Color.Black, 1);
-            Pen penR = new Pen(Color.Red, 1);
-            Pen penG = new Pen(Color.Green, 1);
-            Pen penB = new Pen(Color.Blue, 1);
+            Graphics gNewY = pictureBox12.CreateGraphics();
+            Graphics gNewR = pictureBox11.CreateGraphics();
+            Graphics gNewG = pictureBox10.CreateGraphics();
+            Graphics gNewB = pictureBox9.CreateGraphics();
             gY.Clear(BackColor);
             gR.Clear(BackColor);
             gG.Clear(BackColor);
             gB.Clear(BackColor);
+            gNewY.Clear(BackColor);
+            gNewR.Clear(BackColor);
+            gNewG.Clear(BackColor);
+            gNewB.Clear(BackColor);
             for (int i = 0; i < 256; ++i)
             {
-                gY.DrawLine(pen, i, 256, i, pictureBox3.Height - Convert(gistY[i], 0, gistY.Max(), 0, 64));
-                gR.DrawLine(penR, i, 256, i, pictureBox4.Height - Convert(gistR[i], 0, gistR.Max(), 0, 64));
-                gG.DrawLine(penG, i, 256, i, pictureBox5.Height - Convert(gistG[i], 0, gistG.Max(), 0, 64));
-                gB.DrawLine(penB, i, 256, i, pictureBox6.Height - Convert(gistB[i], 0, gistB.Max(), 0, 64));
+                gY.DrawLine(new Pen(Color.Black, 1), i, 256, i, pictureBox3.Height - Convert(gistY[i], 0, gistY.Max(), 0, 64));
+                gR.DrawLine(new Pen(Color.Red, 1), i, 256, i, pictureBox4.Height - Convert(gistR[i], 0, gistR.Max(), 0, 64));
+                gG.DrawLine(new Pen(Color.Green, 1), i, 256, i, pictureBox5.Height - Convert(gistG[i], 0, gistG.Max(), 0, 64));
+                gB.DrawLine(new Pen(Color.Blue, 1), i, 256, i, pictureBox6.Height - Convert(gistB[i], 0, gistB.Max(), 0, 64));
+                gNewY.DrawLine(new Pen(Color.Black, 1), i, 256, i, pictureBox12.Height - Convert(gistNewY[i], 0, gistY.Max(), 0, 64));
+                gNewR.DrawLine(new Pen(Color.Red, 1), i, 256, i, pictureBox11.Height - Convert(gistNewR[i], 0, gistR.Max(), 0, 64));
+                gNewG.DrawLine(new Pen(Color.Green, 1), i, 256, i, pictureBox10.Height - Convert(gistNewG[i], 0, gistG.Max(), 0, 64));
+                gNewB.DrawLine(new Pen(Color.Blue, 1), i, 256, i, pictureBox9.Height - Convert(gistNewB[i], 0, gistB.Max(), 0, 64));
             }
 
             // Подсчет СКО
@@ -456,8 +498,11 @@ namespace JPEG
                     MSE += Math.Pow(Y[i, j] - newY[i, j], 2);
                 }
             }
-            MSE /= 65536.0;
-            label6.Text = "СКО: " + MSE.ToString();
+            MSE /= (double)(sizeOfImage * sizeOfImage);
+            label6.Text = "СКО: " + Math.Sqrt(MSE).ToString();
+
+            double PSNR = 10 * Math.Log10(255.0 / MSE);
+            label10.Text = "Отношение сигнала к шуму: " + PSNR.ToString();
 
             // Вывод разности изображений
             Bitmap difference = new Bitmap(sizeOfImage, sizeOfImage);

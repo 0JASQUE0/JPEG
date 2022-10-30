@@ -70,9 +70,9 @@ namespace JPEG
             {
                 for (int j = 0; j < size; ++j)
                 {
-                    int R = (int)Y[i, j];
-                    int G = (int)Cb[i, j];
-                    int B = (int)Y[i, j];
+                    int B = (int)((255 - Cb[i, j]) * 0 + Cb[i, j] * 1);
+                    int G = (int)((255 - Cb[i, j]) * 1 + Cb[i, j] * 0);
+                    int R = (int)((255 - Cb[i, j]) * 0.5 + Cb[i, j] * 0.5);
 
                     if (R > 255) R = 255;
                     if (G > 255) G = 255;
@@ -91,9 +91,9 @@ namespace JPEG
             {
                 for (int j = 0; j < size; ++j)
                 {
-                    int R = (int)Y[i, j];
-                    int G = (int)Y[i, j];
-                    int B = (int)Cr[i, j];
+                    int B = (int)((255 - Cr[i, j]) * 0.5 + Cr[i, j] * 0.5);
+                    int G = (int)((255 - Cr[i, j]) * 1 + Cr[i, j] * 0);
+                    int R = (int)((255 - Cr[i, j]) * 0 + Cr[i, j] * 1);
 
                     if (R > 255) R = 255;
                     if (G > 255) G = 255;
@@ -133,9 +133,9 @@ namespace JPEG
             {
                 for (int j = 0; j < size; ++j)
                 {
-                    int R = (int)newY[i, j];
-                    int G = (int)newCb[i / N, j / N];
-                    int B = (int)newY[i, j];
+                    int B = (int)((255 - newCb[i / N, j / N]) * 0 + newCb[i / N, j / N] * 1);
+                    int G = (int)((255 - newCb[i / N, j / N]) * 1 + newCb[i / N, j / N] * 0);
+                    int R = (int)((255 - newCb[i / N, j / N]) * 0.5 + newCb[i / N, j / N] * 0.5);
 
                     if (R > 255) R = 255;
                     if (G > 255) G = 255;
@@ -154,9 +154,9 @@ namespace JPEG
             {
                 for (int j = 0; j < size; ++j)
                 {
-                    int R = (int)newY[i, j];
-                    int G = (int)newY[i, j];
-                    int B = (int)newCr[i / N, j / N];
+                    int B = (int)((255 - newCr[i / N, j / N]) * 0.5 + newCr[i / N, j / N] * 0.5);
+                    int G = (int)((255 - newCr[i / N, j / N]) * 1 + newCr[i / N, j / N] * 0);
+                    int R = (int)((255 - newCr[i / N, j / N]) * 0 + newCr[i / N, j / N] * 1);
 
                     if (R > 255) R = 255;
                     if (G > 255) G = 255;
